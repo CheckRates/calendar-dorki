@@ -95,6 +95,70 @@
         }
     }
 
+    export function dragSelect(jsEvent) {
+        console.log('--> DragSelect')
+        common(jsEvent);
+
+        event = {
+            allDay,
+            start: date,
+            end: new Date(date.getTime() + 60 * 60 * 1000),
+            resourceIds: resource ? [resource.id] : []
+        };
+
+        createIEventDragOver();
+
+        let dayEl = findDayEl();
+        if (dayEl) {
+            console.log(dayEl);
+        }
+
+        let newAllDay;
+        ({allDay: newAllDay, date: newDate, resource: newResource} = getPayload(dayEl)(toX, toY));
+    
+        if (newAllDay === allDay) {
+            $_iEvents[0].end = event.end;
+            $_iEvents[0].start = event.start;
+        }
+
+        if ($dragScroll) {
+            console.log('Lol');
+            let thresholdY = $slotHeight * 2;
+            let thresholdX = $slotWidth;
+            animate(() => {
+                if (bodyEl) {
+                    if (toY < thresholdY) {
+                        console.log('toY < thresholdY');
+                        window.scrollBy(0, max(-10, (toY - thresholdY) / 3));
+                    }
+                    if (toY < bodyRect.top + thresholdY) {
+                        console.log('toY < bodyRect.top + thresholdY');
+                        bodyEl.scrollTop += max(-10, (toY - bodyRect.top - thresholdY) / 3);
+                    }
+                    if (toY > window.innerHeight - thresholdY) {
+                        console.log('toY > window.innerHeight - thresholdY');
+                        window.scrollBy(0, min(10, (toY - window.innerHeight + thresholdY) / 3));
+                    }
+                    if (toY > bodyRect.bottom - thresholdY) {
+                        console.log('toY > bodyRect.bottom - threshold');
+                        bodyEl.scrollTop += min(10, (toY - bodyRect.bottom + thresholdY) / 3);
+                    }
+
+                    if (timelineView($view)) {
+                        if (toX < bodyRect.left + thresholdX) {
+                            console.log('toX < bodyRect.left + thresholdX');
+                            bodyEl.scrollLeft += max(-10, (toX - bodyRect.left - thresholdX) / 3);
+                        }
+                        if (toX > bodyRect.right - thresholdX) {
+                            console.log('toX > bodyRect.right - thresholdX');
+                            bodyEl.scrollLeft += min(10, (toX - bodyRect.right + thresholdX) / 3);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
     export function select(jsEvent) {
         if (!action) {
             action = validJsEvent(jsEvent) ? (
@@ -390,6 +454,22 @@
             extendedProps: {},
             backgroundColor: $selectBackgroundColor,
             resourceIds: event.resourceIds,
+            classNames: [],
+            styles: []
+        };
+    }
+
+    function createIEventDragOver() {
+        $_iEvents[0] = {
+            id: '{drag-over}',
+            allDay: false,
+            start: event.start,
+            end: new Date(event.start.getTime() * 60 * 60 * 1000),
+            title: '',
+            display: 'preview',
+            extendedProps: {},
+            backgroundColor: $selectBackgroundColor,
+            resourceIds: [],
             classNames: [],
             styles: []
         };
