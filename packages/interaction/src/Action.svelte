@@ -96,9 +96,51 @@
     }
 
     export function dragSelect(jsEvent) {
-        console.log('--> DragSelect')
-        common(jsEvent);
+        window.getSelection().removeAllRanges();
+        
+        // common
+        fromX = toX = jsEvent.clientX;
+        fromY = toY = jsEvent.clientY;
 
+        let dayEl = getElementWithPayload(toX, toY);
+        if(dayEl == null) {
+            return;
+        }
+        ({allDay, date, resource} = getPayload(dayEl)(toX, toY));
+
+                event = {
+            allDay,
+            start: date,
+            end: new Date(date.getTime() + 60 * 60 * 1000),
+            resourceIds: resource ? [resource.id] : []
+        };
+    
+        animate(() => {});
+
+
+        
+        /*
+        if (timelineView($view)) {
+            bodyEl = clipEl = $_bodyEl;
+        } else {
+            bodyEl = ancestor(dayEl, resource ? 4 : 3);
+            clipEl = ancestor(dayEl, resource && (dragging() || $datesAboveResources) ? 2 : 1);
+        }
+        calcViewport();
+
+        if (jsEvent.pointerType !== 'mouse') {
+            // For touch devices init long press delay
+            console.log('touch device');
+            timer = setTimeout(() => {
+                if (action) {
+                    interacting = true;
+                    move(jsEvent);
+                }
+            }, (selecting() ? $selectLongPressDelay : $eventLongPressDelay) ?? $longPressDelay);
+        }
+        
+        // common end
+        
         event = {
             allDay,
             start: date,
@@ -108,10 +150,7 @@
 
         createIEventDragOver();
 
-        let dayEl = findDayEl();
-        if (dayEl) {
-            console.log(dayEl);
-        }
+        dayEl = findDayEl();
 
         let newAllDay;
         ({allDay: newAllDay, date: newDate, resource: newResource} = getPayload(dayEl)(toX, toY));
@@ -120,9 +159,8 @@
             $_iEvents[0].end = event.end;
             $_iEvents[0].start = event.start;
         }
-
+        
         if ($dragScroll) {
-            console.log('Lol');
             let thresholdY = $slotHeight * 2;
             let thresholdX = $slotWidth;
             animate(() => {
@@ -157,6 +195,7 @@
                 }
             });
         }
+        */
     }
 
     export function select(jsEvent) {
@@ -317,6 +356,7 @@
     }
 
     function handlePointerUp(jsEvent) {
+        console.log('PointerUp!: ', action);
         if (selected && $unselectAuto && !($unselectCancel && jsEvent.target.closest($unselectCancel))) {
             unselect(jsEvent);
         }
@@ -401,7 +441,7 @@
             action = fromX = fromY = toX = toY = event = display = date = newDate = resource = newResource = delta =
                 allDay = $_iClass = minEnd = selectStep = margin = undefined;
             bodyEl = clipEl = bodyRect = clipRect = undefined;
-
+            console.log('Clearing stuff...');
             if (timer) {
                 clearTimeout(timer);
                 timer = undefined;
